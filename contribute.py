@@ -44,7 +44,7 @@ def main(def_args=sys.argv[1:]):
                 and randint(0, 100) < frequency:
             for commit_time in (day + timedelta(minutes=m)
                                 for m in range(contributions_per_day(args))):
-                contribute(commit_time)
+                contribute('README.md', commit_time)
 
     if repository is not None:
         run(['git', 'remote', 'add', 'origin', repository])
@@ -55,12 +55,14 @@ def main(def_args=sys.argv[1:]):
           '\x1b[6;30;42mcompleted successfully\x1b[0m!')
 
 
-def contribute(date):
-    with open(os.path.join(os.getcwd(), 'README.md'), 'a') as file:
-        file.write(message(date) + '\n\n')
-    run(['git', 'add', '.'])
-    run(['git', 'commit', '-m', '"%s"' % message(date),
-         '--date', date.strftime('"%Y-%m-%d %H:%M:%S"')])
+def contribute(filename, date):
+    repo_initialized = os.path.isfile(filename)
+    with open(os.path.join(os.getcwd(), filename), 'w') as file:
+        file.write(message(date) + '\n')
+    if not repo_initialized:
+        run(['git', 'add', filename])
+    run(['git', 'commit', '--allow-empty-message', '-m', '',
+         '--date', date.strftime('"%Y-%m-%d %H:%M:%S"'), filename])
 
 
 def run(commands):
